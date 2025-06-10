@@ -13,13 +13,22 @@ export default function SideBar() {
                 <ol className='pl-4 pt-6'>
                     {sidebarItems1.map((record, index) => {
                         const imagePadding = record.icon ? '' : 'pl-10'
+                        const isSelected = record.item === 'Products'
                         return (
                             <li key={index}>
-                                <button className={`flex items-center gap-2 py-1 w-[208px] ${record.item === 'Products' && 'bg-[#D7EDFF] rounded-[6px]'}`}>
+                                <button className={`flex items-center gap-2 py-1 w-[208px] rounded-[6px] transition-colors duration-200 ${
+                                    isSelected 
+                                        ? 'bg-[#D7EDFF]' 
+                                        : 'hover:bg-[#D7EDFF]'
+                                }`}>
                                     {record.icon && <div className='pl-2'>
                                         <img src={record.item.toLowerCase().replace(/\s/g, '_') + '.svg'} alt="" />
                                     </div>}
-                                    <span className={record.item === 'Products' ? `text-sidebar-selected-text text-[#4094F7] ${imagePadding}` : `text-sidebar-menu-text text-sidebar-text-color ${imagePadding}`}>{record.item}</span>
+                                    <span className={`${
+                                        isSelected 
+                                            ? `text-sidebar-selected-text text-[#4094F7] ${imagePadding}` 
+                                            : `text-sidebar-menu-text text-sidebar-text-color ${imagePadding}`
+                                    } transition-colors duration-200`}>{record.item}</span>
                                 </button>
                             </li>
                         )
@@ -30,13 +39,22 @@ export default function SideBar() {
                 <ol className='pl-4 pt-4'>
                     {sidebarItems2.map((record, index) => {
                         const imagePadding = record.icon ? '' : 'pl-10'
+                        const isSelected = record.item === 'Products'
                         return (
                             <li key={index}>
-                                <button className={`flex items-center gap-2 py-1 w-[208px] ${record.item === 'Products' && 'bg-[#D7EDFF] rounded-[6px]'}`}>
+                                <button className={`flex items-center gap-2 py-1 w-[208px] rounded-[6px] transition-colors duration-200 ${
+                                    isSelected 
+                                        ? 'bg-[#D7EDFF]' 
+                                        : 'hover:bg-[#D7EDFF]'
+                                }`}>
                                     {record.icon && <div className='pl-2'>
                                         <img src={record.item.toLowerCase().replace(/\s/g, '_') + '.svg'} alt="" />
                                     </div>}
-                                    <span className={record.item === 'Products' ? `text-sidebar-selected-text text-[#4094F7] ${imagePadding}` : `text-sidebar-menu-text text-sidebar-text-color ${imagePadding}`}>{record.item}</span>
+                                    <span className={`${
+                                        isSelected 
+                                            ? `text-sidebar-selected-text text-[#4094F7] ${imagePadding}` 
+                                            : `text-sidebar-menu-text text-sidebar-text-color ${imagePadding}`
+                                    } transition-colors duration-200`}>{record.item}</span>
                                 </button>
                             </li>
                         )
@@ -47,13 +65,22 @@ export default function SideBar() {
                 <ol className='pl-4 pb-4 mt-auto'>
                     {sidebarItems3.map((record, index) => {
                         const imagePadding = record.icon ? '' : 'pl-10'
+                        const isSelected = record.item === 'Products'
                         return (
                             <li key={index}>
-                                <button className={`flex items-center gap-2 py-1 w-[208px] ${record.item === 'Products' && 'bg-[#D7EDFF] rounded-[6px]'}`}>
+                                <button className={`flex items-center gap-2 py-1 w-[208px] rounded-[6px] transition-colors duration-200 ${
+                                    isSelected 
+                                        ? 'bg-[#D7EDFF]' 
+                                        : 'hover:bg-[#D7EDFF]'
+                                }`}>
                                     {record.icon && <div className='pl-2'>
                                         <img src={record.item.toLowerCase().replace(/\s/g, '_') + '.svg'} alt="" />
                                     </div>}
-                                    <span className={record.item === 'Products' ? `text-sidebar-selected-text text-[#4094F7] ${imagePadding}` : `text-sidebar-menu-text text-sidebar-text-color ${imagePadding}`}>{record.item}</span>
+                                    <span className={`${
+                                        isSelected 
+                                            ? `text-sidebar-selected-text text-[#4094F7] ${imagePadding}` 
+                                            : `text-sidebar-menu-text text-sidebar-text-color ${imagePadding}`
+                                    } transition-colors duration-200`}>{record.item}</span>
                                 </button>
                             </li>
                         )
