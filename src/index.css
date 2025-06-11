@@ -6,6 +6,6 @@
 
   html,
   body {
-    @apply font-inter text-sidebar-menu-text;
+    @apply font-inter text-sidebar-text-color;
   }
 }
