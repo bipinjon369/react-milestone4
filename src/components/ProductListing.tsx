@@ -11,21 +11,22 @@ export default function ProductListing() {
     const [products, setProducts] = useState<Product[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [totalPages, setTotalPages] = useState<number>(3); // Set initial value to 4 (40/10)
+    const limit = 10;
     // To get the selected product
-    const [selectedProduct, setSelectedProduct] = useState('')
     const { getAPI } = useApi();
-    
-    // Function to get the selected product
-    const handleSelectProduct = (product: Product) => {
-        setSelectedProduct(product.id);
-    };
+
+    // Fetch paginated products when page changes
     useEffect(() => {
         const fetchProducts = async () => {
             try {
+                console.log('Curr page: ', currentPage)
                 setLoading(true);
                 setError(null); // Reset error state
-                const res: { error: unknown, data: Product[]} = await getAPI('products');
-                console.log(res.data);
+                const offset = (currentPage - 1) * limit;
+                console.log('Offset: ', offset)
+                const res: { error: unknown, data: Product[] } = await getAPI(`products?offset=${offset}&limit=${limit}`);
                 setProducts(res.data);
             } catch (err: unknown) {
                 // Proper error handling for TypeScript
@@ -36,8 +37,9 @@ export default function ProductListing() {
                 setLoading(false);
             }
         };
-        fetchProducts(); // Actually call the function!
-    }, []); // Add dependency array
+        
+        fetchProducts();
+    }, [currentPage]); // Add currentPage as dependency
 
     // Handle loading state
     if (loading) {
@@ -61,10 +63,20 @@ export default function ProductListing() {
         );
     }
 
+    // Handle page change
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
     return (
         <div className="ml-10 mr-[29px]">
             <ProductHeader />
-            <ProductList products={products} />
+            <ProductList 
+                products={products} 
+                currentPage={currentPage} 
+                pageCount={totalPages} 
+                onPageChange={handlePageChange} 
+            />
         </div>
     );
 }

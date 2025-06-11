@@ -12,6 +12,7 @@ export default function Paginator({
   onPageChange,
   currentPage,
 }: PaginatorProps) {
+  console.log('It is the oneee', currentPage)
   return (
     <div className="relative w-full border-t border-t-[#E5E9EB] pt-3 pb-4">
       <ReactPaginate
@@ -26,11 +27,11 @@ export default function Paginator({
             <ChevronLeft size={16} /> Previous
           </span>
         }
-        onPageChange={({ selected }) => onPageChange(selected)}
+        onPageChange={({ selected }) => onPageChange(selected + 1)}
         pageRangeDisplayed={3}
         marginPagesDisplayed={1}
         pageCount={pageCount}
-        forcePage={currentPage}
+        forcePage={currentPage - 1}
         containerClassName="flex justify-center items-center gap-2 relative"
         pageClassName="rounded-[8px] text-sm w-10 h-10 flex items-center justify-center hover:bg-gray-100"
         activeClassName="text-[#4094F7] font-medium bg-[#F5F9FF]"
