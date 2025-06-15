@@ -17,7 +17,7 @@ export default function ProductList ({
     pageCount = 1, 
     onPageChange
 }: {
-    products: Product[] | null,
+    products: Product[],
     currentPage?: number,
     pageCount?: number,
     onPageChange: (page: number) => void
@@ -26,7 +26,7 @@ export default function ProductList ({
     const [selectedProducts, setSelectedProducts] = useState<string[]>([])
     
     // Check if all products are selected
-    const isAllSelected = products ? selectedProducts.length === products.length : false
+    const isAllSelected = products ? (selectedProducts.length === products.length) && products.length != 0 : false
     
     // Handle header checkbox (select/deselect all)
     const handleHeaderCheckboxChange = () => {
@@ -61,9 +61,9 @@ export default function ProductList ({
     }
     
     return (
-        <div className="pt-7">
+        <div className="pt-7 flex flex-col h-[calc(100vh-147px)] min-h-[400px]">
             {/* Table headers */}
-            <div className="overflow-auto max-h-[calc(100vh-245px)]">
+            <div className="flex-grow overflow-auto">
                 <table className="table-fixed w-full border-collapse">
                     <colgroup>
                         <col className="w-12"/>{/* checkbox */}
@@ -91,55 +91,65 @@ export default function ProductList ({
                     </thead>
                     {/* Table rows */}
                     <tbody>
-                        {products?.map((record) => (
-                            <tr key={record.id} className="h-[64.2px]">
-                                <td className="px-3 py-1">
-                                    <input
-                                        type="checkbox"
-                                        className="h-4 w-4 rounded-[4px] border border-[#B0BABF] bg-[#F6F8F9] text-blue-600 focus:outline-none disabled:opacity-50"
-                                        checked={selectedProducts.includes(record.id)}
-                                        onChange={() => handleProductCheckboxChange(record.id)}
-                                    />
-                                </td>
-                                <td className="px-3 pt-1 pb-2">
-                                    <img 
-                                        className="h-12 w-12 rounded-[8px] object-cover" 
-                                        src={record.images[0]} 
-                                        alt={record.title}
-                                    />
-                                </td>
-                                <td className="px-3 py-1">
-                                    <div className="truncate">
-                                        {record.title}
-                                    </div>
-                                </td>
-                                <td className="px-3 py-1">
-                                    <div className="truncate text-sm text-gray-600">
-                                        {record.description}
-                                    </div>
-                                </td>
-                                <td className="px-3 py-1">
-                                    <div className="truncate">
-                                        ${record.price}
-                                    </div>
-                                </td>
-                                <td className="px-3 py-1">
-                                    <div className='flex items-center gap-[22px]'>
-                                        {/* Add your action buttons here */}
-                                        <button>
-                                            <img src='delete.svg'/>
-                                        </button>
-                                        <button>
-                                            <img src='edit.svg'/>
-                                        </button>
-                                    </div>
+                        {products?.length ? (
+                            products.map((record) => (
+                                <tr key={record.id} className="h-[64.2px]">
+                                    <td className="px-3 py-1">
+                                        <input
+                                            type="checkbox"
+                                            className="h-4 w-4 rounded-[4px] border border-[#B0BABF] bg-[#F6F8F9] text-blue-600 focus:outline-none disabled:opacity-50"
+                                            checked={selectedProducts.includes(record.id)}
+                                            onChange={() => handleProductCheckboxChange(record.id)}
+                                        />
+                                    </td>
+                                    <td className="px-3 pt-1 pb-2">
+                                        <img 
+                                            className="h-12 w-12 rounded-[8px] object-cover" 
+                                            src={record.images[0]} 
+                                            alt={record.title}
+                                        />
+                                    </td>
+                                    <td className="px-3 py-1">
+                                        <div className="truncate">
+                                            {record.title}
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-1">
+                                        <div className="truncate text-sm text-gray-600">
+                                            {record.description}
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-1">
+                                        <div className="truncate">
+                                            ${record.price}
+                                        </div>
+                                    </td>
+                                    <td className="px-3 py-1">
+                                        <div className='flex items-center gap-[22px]'>
+                                            {/* Add your action buttons here */}
+                                            <button>
+                                                <img src='delete.svg'/>
+                                            </button>
+                                            <button>
+                                                <img src='edit.svg'/>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan={6} className="text-center py-8 text-gray-500">
+                                    No products found
                                 </td>
                             </tr>
-                        ))}
+                        )}
                     </tbody>
                 </table>
             </div>
-            <Paginator currentPage={currentPage} pageCount={pageCount} onPageChange={handlePageChange} />
+            <div className="mt-auto">
+                {products?.length > 0 && <Paginator currentPage={currentPage} pageCount={pageCount} onPageChange={handlePageChange} />}
+            </div>
         </div>
     )
 }

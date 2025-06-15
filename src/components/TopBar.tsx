@@ -1,4 +1,4 @@
-export default function TopBar () {
+export default function TopBar ({ handleSearchText }: { handleSearchText: (searchText: string) => void }) {
     return (
         <div className="flex border-b border-[#E5E9EB]">
             {/* Search bar */}
@@ -6,7 +6,11 @@ export default function TopBar () {
                 <div className='pr-2'>
                     <img src='search.svg' alt='search' />
                 </div>
-                <input type='text' placeholder='Search...' className='text-sidebar-menu-text placeholder-[#84919A] bg-transparent border-none outline-none'/>
+                <input type='text'
+                    placeholder='Search...' 
+                    className='text-sidebar-menu-text placeholder-[#84919A] bg-transparent border-none outline-none'
+                    onChange={(e) => handleSearchText(e.target.value)}
+                />
             </div>
             {/* Images */}
             <div className="flex items-center ml-auto pr-11 gap-3">

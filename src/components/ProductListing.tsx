@@ -6,28 +6,41 @@ import useApi from "../services/useApi";
 
 import type { Product } from "../data/types";
 
-export default function ProductListing() {
+interface ProductListingProps {
+    searchText?: string;
+}
+
+export default function ProductListing({ searchText = '' }: ProductListingProps) {
     // Call the get api
-    const [products, setProducts] = useState<Product[] | null>(null);
+    const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [totalPages, setTotalPages] = useState<number>(3); // Set initial value to 4 (40/10)
+    const [totalPages, setTotalPages] = useState<number>(0); // Set initial value to 3
     const limit = 10;
     // To get the selected product
     const { getAPI } = useApi();
 
-    // Fetch paginated products when page changes
+    // Fetch paginated products when page changes or search text changes
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                console.log('Curr page: ', currentPage)
                 setLoading(true);
                 setError(null); // Reset error state
                 const offset = (currentPage - 1) * limit;
-                console.log('Offset: ', offset)
-                const res: { error: unknown, data: Product[] } = await getAPI(`products?offset=${offset}&limit=${limit}`);
-                setProducts(res.data);
+                // Fetch the total count first
+                const countResult = await getAPI(`products${searchText && '?title=' + searchText}`);
+                setTotalPages(Math.ceil(countResult.data.length / limit));
+                console.log('The count result: ', (Math.ceil(countResult.data.length / limit)))
+                console.log('The pages: ', totalPages)
+                // Fetch products
+                const apiEndpoint = `products?offset=${offset}&limit=${limit}${searchText && '&title=' + searchText}`;
+                const res: { error: unknown, data: Product[] } = await getAPI(apiEndpoint);
+                
+                // Filter products by search text if provided
+                const filteredProducts = res.data;
+                
+                setProducts(filteredProducts);
             } catch (err: unknown) {
                 // Proper error handling for TypeScript
                 const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
@@ -39,13 +52,13 @@ export default function ProductListing() {
         };
         
         fetchProducts();
-    }, [currentPage]); // Add currentPage as dependency
+    }, [currentPage, searchText]); // Add searchText as dependency
 
     // Handle loading state
     if (loading) {
         return (
             <div className="ml-10 mr-[29px]">
-                <div className="flex justify-center items-center h-64">
+                <div className="flex justify-center items-center h-64 text-gray-500">
                     <p>Loading products...</p>
                 </div>
             </div>
