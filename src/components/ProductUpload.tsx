@@ -9,7 +9,11 @@ interface UploadState {
     error: string | null;
 }
 
-export default function ProductUpload() {
+interface ProductUploadProps {
+    onImageUploaded?: (url: string) => void;
+}
+
+export default function ProductUpload({ onImageUploaded }: ProductUploadProps) {
     const [uploadState, setUploadState] = useState<UploadState>({
         isUploading: false,
         file: null,
@@ -95,6 +99,11 @@ export default function ProductUpload() {
                 uploadedUrl: publicUrl,
                 error: null
             });
+            
+            // Notify parent component about the uploaded image URL
+            if (onImageUploaded) {
+                onImageUploaded(publicUrl);
+            }
         } catch (error: unknown) {
             console.error('Upload error:', error);
             setUploadState({
@@ -122,6 +131,11 @@ export default function ProductUpload() {
         
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
+        }
+        
+        // Notify parent component that image was removed
+        if (onImageUploaded) {
+            onImageUploaded('');
         }
     };
     

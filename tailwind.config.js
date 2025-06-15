@@ -21,6 +21,7 @@ export default {
         'table-header-text': ['12px', { lineHeight: '16px', fontWeight: '600' }],
         'upload-text1': ['12px', { lineHeight: '20px', fontWeight: '400' }],
         'upload-text2': ['14px', { lineHeight: '24px', fontWeight: '400' }],
+        'label-text': ['12px', { lineHeight: '12px', fontWeight: '400' }],
       },
       fontFamily: {
         inter: ['Inter', 'sans-serif']
