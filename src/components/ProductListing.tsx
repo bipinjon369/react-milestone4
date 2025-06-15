@@ -39,6 +39,7 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
                 
                 // Filter products by search text if provided
                 const filteredProducts = res.data;
+                console.log('The products: ', filteredProducts)
                 
                 setProducts(filteredProducts);
             } catch (err: unknown) {
@@ -80,7 +81,6 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
-
     return (
         <div className="ml-10 mr-[29px]">
             <ProductHeader />

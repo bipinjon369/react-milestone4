@@ -6,13 +6,14 @@ const useApi = (url: string = '') => {
      * @returns The access token string.
      * @throws If the user is not authenticated or the token cannot be retrieved.
      */
-    const baseURL = url ?? 'https://api.escuelajs.co/api/v1/';
+    const baseURL = url ? url : 'https://api.escuelajs.co/api/v1/';
     /**
      * Makes a GET request to the specified endpoint with authorization headers.
      * @returns An object with `error` and `data` properties.
      */
     const getAPI = async (endpoint: string) => {
         try {
+            console.log('The endpoint: ', `${baseURL}${endpoint}`)
             const { data } = await axios.get(`${baseURL}${endpoint}`);
             return { error: false, data };
         } catch (error) {
