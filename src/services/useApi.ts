@@ -1,20 +1,12 @@
-/**
- * The `useApi` function is a custom hook in a React application that handles API requests with
- * authentication using AWS Cognito and Axios.
- * @returns The `useApi` function returns an object containing four functions: `getAPI`, `PostAPI`,
- * `PatchAPI`, and `DeleteAPI`. These functions are used to make API requests with proper authorization
- * headers using the Cognito access token.
- */
-
 import axios from 'axios';
 
-const useApi = () => {
+const useApi = (url: string = '') => {
     /**
      * Fetches the access token for the current authenticated user using AWS Amplify's `Auth` module.
      * @returns The access token string.
      * @throws If the user is not authenticated or the token cannot be retrieved.
      */
-    const baseURL = 'https://api.escuelajs.co/api/v1/';
+    const baseURL = url ?? 'https://api.escuelajs.co/api/v1/';
     /**
      * Makes a GET request to the specified endpoint with authorization headers.
      * @returns An object with `error` and `data` properties.

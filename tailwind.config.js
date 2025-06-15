@@ -19,6 +19,8 @@ export default {
         'product-header-text': ['36px', { lineHeight: '48px', fontWeight: '700' }],
         'button-text': ['14px', { lineHeight: '24px', fontWeight: '600' }],
         'table-header-text': ['12px', { lineHeight: '16px', fontWeight: '600' }],
+        'upload-text1': ['12px', { lineHeight: '20px', fontWeight: '400' }],
+        'upload-text2': ['14px', { lineHeight: '24px', fontWeight: '400' }],
       },
       fontFamily: {
         inter: ['Inter', 'sans-serif']
