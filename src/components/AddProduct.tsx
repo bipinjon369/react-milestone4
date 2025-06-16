@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import ProductUpload from './ProductUpload'
 import ProductInput from './ProductInput'
+import ToastMessage from './ToastMessage';
 
 const inputFields = [
     {
@@ -27,29 +27,25 @@ const inputFields = [
 ]
 
 export default function AddProduct() {
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
     
     const handleFormSubmit = (formData: Record<string, string>) => {
         // Here you would typically send the data to your backend
-        console.log('Form data:', { ...formData, image: imageUrl });
+        console.log('Form data:', { ...formData });
     };
     
-    const handleImageUploaded = (url: string) => {
-        setImageUrl(url);
-    };
 
     return (
-        <>
+        <div className='ml-[42px] w-[850px]'>
             <div className="flex flex-row justify-between items-center pt-8 pb-2 border-b border-b-[#E5E9EB]">
                 <h1 className="text-product-header-text">Add Product</h1>
             </div>
             <div>
-                <ProductUpload onImageUploaded={handleImageUploaded} />
+                <ToastMessage message='Something happened' type='success' />
                 <ProductInput 
                     fields={inputFields} 
                     onSubmit={handleFormSubmit} 
                 />
             </div>
-        </>
+        </div>
     )
 }

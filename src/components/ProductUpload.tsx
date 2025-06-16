@@ -1,4 +1,4 @@
-import { useState, useRef, ChangeEvent, DragEvent } from 'react';
+import { useState, useRef, useEffect, ChangeEvent, DragEvent } from 'react';
 import { uploadToS3 } from '../services/s3Service';
 
 interface UploadState {
@@ -10,10 +10,11 @@ interface UploadState {
 }
 
 interface ProductUploadProps {
-    onImageUploaded?: (url: string) => void;
+    error?: string;
+    onImageUploaded?: (url: string) => void; // Add callback to notify parent
 }
 
-export default function ProductUpload({ onImageUploaded }: ProductUploadProps) {
+export default function ProductUpload({ error, onImageUploaded }: ProductUploadProps) {
     const [uploadState, setUploadState] = useState<UploadState>({
         isUploading: false,
         file: null,
@@ -23,6 +24,22 @@ export default function ProductUpload({ onImageUploaded }: ProductUploadProps) {
     });
     
     const fileInputRef = useRef<HTMLInputElement>(null);
+    
+    // Update error state when prop changes
+    useEffect(() => {
+        if (error) {
+            setUploadState(prev => ({ ...prev, error }));
+        }
+    }, [error]);
+    
+    // Cleanup object URLs on unmount
+    useEffect(() => {
+        return () => {
+            if (uploadState.preview) {
+                URL.revokeObjectURL(uploadState.preview);
+            }
+        };
+    }, [uploadState.preview]);
     
     // Supported file types
     const supportedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
@@ -77,6 +94,11 @@ export default function ProductUpload({ onImageUploaded }: ProductUploadProps) {
             return;
         }
         
+        // Clean up previous preview URL
+        if (uploadState.preview) {
+            URL.revokeObjectURL(uploadState.preview);
+        }
+        
         // Create preview
         const previewUrl = URL.createObjectURL(file);
         
@@ -89,30 +111,26 @@ export default function ProductUpload({ onImageUploaded }: ProductUploadProps) {
         });
         
         try {
-            // Get image URL from Fake Store API
             const publicUrl = await uploadToS3(file);
             
-            setUploadState({
+            setUploadState(prev => ({
+                ...prev,
                 isUploading: false,
-                file,
-                preview: previewUrl,
                 uploadedUrl: publicUrl,
                 error: null
-            });
+            }));
             
-            // Notify parent component about the uploaded image URL
-            if (onImageUploaded) {
-                onImageUploaded(publicUrl);
-            }
+            // Notify parent component that image was uploaded successfully
+            onImageUploaded?.(publicUrl);
+            
         } catch (error: unknown) {
             console.error('Upload error:', error);
-            setUploadState({
+            setUploadState(prev => ({
+                ...prev,
                 isUploading: false,
-                file,
-                preview: previewUrl,
                 uploadedUrl: null,
                 error: 'Failed to upload file. Please try again.'
-            });
+            }));
         }
     };
     
@@ -121,6 +139,11 @@ export default function ProductUpload({ onImageUploaded }: ProductUploadProps) {
     };
     
     const resetUpload = () => {
+        // Clean up the object URL
+        if (uploadState.preview) {
+            URL.revokeObjectURL(uploadState.preview);
+        }
+        
         setUploadState({
             isUploading: false,
             file: null,
@@ -132,103 +155,66 @@ export default function ProductUpload({ onImageUploaded }: ProductUploadProps) {
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
-        
-        // Notify parent component that image was removed
-        if (onImageUploaded) {
-            onImageUploaded('');
-        }
     };
     
+    const currentError = uploadState.uploadedUrl ? null : (uploadState.error || error);
+    
     return (
-        <div>
-            <p className='text-upload-text1 pt-[30px]'>Product image</p>
+        <div className='pb-6'>
+            <span className='text-label-text text-[#5E6366] pt-[30px] pb-[6px]'>Product image</span><span className="text-red-500 text-label-text ml-1">*</span>
             
             {!uploadState.file ? (
                 <div 
-                    className='flex flex-col items-center border border-dashed border-[#ABAFB1] rounded-[8px]'
-                    style={{
-                        borderStyle: 'dashed',
-                        borderWidth: '2px',
-                        borderImageSource: 'repeating-linear-gradient(45deg, #ABAFB1 0 4px, transparent 4px 10px)',
-                        borderImageSlice: 1
-                    }}
+                    className='flex flex-col items-center border border-dashed border-[#ABAFB1] rounded-[8px] p-7'
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                 >
-                    <div className="flex flex-col items-center py-7">
-                        <span className="text-upload-text1 pb-[10px]">Drag and drop files</span>
-                        <span className="text-upload-text1 text-[#ABAFB1] pb-[10px]">or</span>
-                        <button 
-                            className="text-upload-text2 border-[2px] border-[#DDE2E4] w-[69px] h-[32px] rounded-[6px] mb-[10px]"
-                            onClick={handleBrowseClick}
-                        >
-                            Browse
-                        </button>
-                        <input 
-                            type="file" 
-                            ref={fileInputRef} 
-                            onChange={handleFileChange} 
-                            accept=".jpg,.jpeg,.png" 
-                            className="hidden" 
-                        />
-                        <span className="text-upload-text1 text-[#ABAFB1]">Supported file types: jpg, png and jpeg</span>
-                        <span className="text-upload-text1 text-[#ABAFB1]">format</span>
-                    </div>
+                    <span className="text-upload-text1 pb-[10px]">Drag and drop files</span>
+                    <span className="text-upload-text1 text-[#ABAFB1] pb-[10px]">or</span>
+                    <button 
+                        className="text-upload-text2 border-[2px] border-[#DDE2E4] w-[69px] h-[32px] rounded-[6px] mb-[10px] hover:bg-gray-50"
+                        onClick={handleBrowseClick}
+                        disabled={uploadState.isUploading}
+                    >
+                        Browse
+                    </button>
+                    <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileChange} 
+                        accept=".jpg,.jpeg,.png" 
+                        className="hidden" 
+                    />
+                    <span className="text-upload-text1 text-[#ABAFB1]">Supported file types: jpg, png and jpeg format</span>
                 </div>
             ) : (
-                <div className="mt-4">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center">
-                            {uploadState.preview && (
-                                <img 
-                                    src={uploadState.preview} 
-                                    alt="Preview" 
-                                    className="w-16 h-16 object-cover rounded-md mr-4" 
-                                />
-                            )}
-                            <div>
-                                <p className="font-medium">{uploadState.file.name}</p>
-                                <p className="text-sm text-gray-500">
-                                    {(uploadState.file.size / 1024).toFixed(2)} KB
-                                </p>
-                            </div>
-                        </div>
-                        <button 
-                            onClick={resetUpload}
-                            className="text-red-500 hover:text-red-700"
-                        >
-                            Remove
-                        </button>
-                    </div>
-                    
+                <div className='relative w-fit'>
                     {uploadState.isUploading && (
-                        <div className="w-full bg-gray-200 rounded-full h-2.5">
-                            <div className="bg-blue-600 h-2.5 rounded-full w-1/2"></div>
+                        <div className="absolute inset-0 bg-black/20 rounded-[8px] flex items-center justify-center">
+                            <div className="text-white">Uploading...</div>
                         </div>
                     )}
-                    
-                    {uploadState.uploadedUrl && (
-                        <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-md">
-                            <p className="text-green-700 font-medium">File uploaded successfully!</p>
-                            <p className="text-sm break-all mt-1">
-                                <a 
-                                    href={uploadState.uploadedUrl} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline"
-                                >
-                                    {uploadState.uploadedUrl}
-                                </a>
-                            </p>
-                        </div>
-                    )}
-                    
-                    {uploadState.error && (
-                        <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-md">
-                            <p className="text-red-700">{uploadState.error}</p>
-                        </div>
+                    {uploadState.preview && (
+                        <>
+                            <img 
+                                src={uploadState.preview} 
+                                alt="Preview" 
+                                className="h-[198px] rounded-[8px] object-cover" 
+                            />
+                            <button 
+                                onClick={resetUpload}
+                                className="absolute top-3 right-3 bg-white/80 hover:bg-white rounded-full p-2 shadow-sm transition-colors"
+                                disabled={uploadState.isUploading}
+                            >
+                                <img className='w-4 h-4' src='close_image.svg' alt="Close"/>
+                            </button>
+                        </>
                     )}
                 </div>
+            )}
+            
+            {currentError && (
+                <p className="text-red-500 text-sm mt-2">{currentError}</p>
             )}
         </div>
     );

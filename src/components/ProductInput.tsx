@@ -1,4 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
+import Button from './Button';
+import ProductUpload from './ProductUpload'
 
 interface InputField {
   label: string;
@@ -20,7 +22,18 @@ export default function ProductInput({
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleImageUploaded = (url: string) => {
+    // Fix: Use the url parameter directly, not imageUrl state
+    setFormData(prev => ({ ...prev, image_url: url }));
+    
+    // Clear image error when upload succeeds
+    if (errors.image_url) {
+      setErrors(prev => ({ ...prev, image_url: '' }));
+    }
+  };
+
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    console.log('The form data', formData);
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
@@ -35,11 +48,18 @@ export default function ProductInput({
     
     // Validate required fields
     const newErrors: Record<string, string> = {};
+    
+    // Validate form fields
     fields.forEach(field => {
       if (field.required && !formData[field.name]) {
         newErrors[field.name] = `${field.label} is required`;
       }
     });
+    
+    // Validate image upload (outside the loop)
+    if (!formData.image_url) {
+      newErrors['image_url'] = `Please upload an Image`;
+    }
     
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -64,6 +84,11 @@ export default function ProductInput({
 
     return (
       <>
+        <ProductUpload 
+          onImageUploaded={handleImageUploaded} 
+          error={errors.image_url ?? ''} 
+        />
+        
         {/* Render pairs of normal fields */}
         {pairs.map((pair, index) => (
           <div key={index} className="flex gap-4 mb-6">
@@ -112,7 +137,7 @@ export default function ProductInput({
               placeholder={field.placeholder}
               value={formData[field.name] || ''}
               onChange={handleChange}
-              className="w-full border border-[#DDE2E4] rounded-[8px] p-2 focus:outline-none focus:ring-2 focus:ring-[#5E6366]"
+              className="w-full h-[41.8px] border border-[#DDE2E4] rounded-[8px] p-2 focus:outline-none focus:ring-2 focus:ring-[#5E6366]"
               rows={4}
             />
             
@@ -128,15 +153,7 @@ export default function ProductInput({
   return (
     <form onSubmit={handleSubmit} className="mt-8">
       {renderFields()}
-      
-      <div className="mt-8">
-        <button
-          type="submit"
-          className="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Add Product
-        </button>
-      </div>
+      <Button buttonText='Add' width='375px'/>
     </form>
   );
 }
