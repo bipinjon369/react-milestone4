@@ -1,5 +1,8 @@
-import ProductInput from './ProductInput'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import ProductInput from './ProductInput';
 import ToastMessage from './ToastMessage';
+import useApi from '../services/useApi';
 
 const inputFields = [
     {
@@ -21,30 +24,104 @@ const inputFields = [
         name: 'description',
         type: 'textarea',
         placeholder: 'Enter description',
-        required: false
+        required: true
     }
-]
+];
 
 export default function AddProduct() {
+    const navigate = useNavigate();
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const [toastType, setToastType] = useState<'success' | 'error'>('success');
+    const [isLoading, setIsLoading] = useState(false);
     
-    const handleFormSubmit = (formData: Record<string, string>) => {
-        // Here you would typically send the data to your backend
-        console.log('Form data:', { ...formData });
+    const { PostAPI } = useApi();
+    
+    const handleFormSubmit = async (formData: Record<string, string>) => {
+        setIsLoading(true);
+        
+        try {
+            const productData = {
+                title: formData.title,
+                price: parseFloat(formData.price),
+                description: formData.description || 'No description provided',
+                categoryId: 1,
+                images: [formData.image_url]
+            };
+            
+            const response = await PostAPI('products', productData);
+            
+            if (response.error) {
+                setToastMessage('Failed to add product. Please check the form for errors.');
+                setToastType('error');
+                setShowToast(true);
+                
+                if (response.data && typeof response.data === 'object') {
+                    const errorData = response.data;
+                    
+                    if (
+                        errorData.code === 'SQLITE_CONSTRAINT_UNIQUE' || 
+                        (errorData.message && typeof errorData.message === 'string' && 
+                         errorData.message.includes('UNIQUE constraint failed'))
+                    ) {
+                        throw new Error('TITLE_EXISTS');
+                    }
+                }
+                
+                throw new Error('API_ERROR');
+            } else {
+                // Product added successfully, redirect to home page
+                navigate('/', { 
+                    state: { 
+                        showToast: true, 
+                        toastMessage: 'Product added successfully!',
+                        toastType: 'success'
+                    } 
+                });
+            }
+            
+            return { success: true };
+            
+        } catch (error: any) {
+            console.error('Error adding product:', error);
+            
+            if (error.message !== 'TITLE_EXISTS') {
+                setToastMessage('An unexpected error occurred.');
+                setToastType('error');
+                setShowToast(true);
+            }
+            
+            throw error;
+        } finally {
+            setIsLoading(false);
+        }
     };
-    
+
+    const handleCloseToast = () => {
+        setShowToast(false);
+    };
 
     return (
         <div className='ml-[42px] w-[850px]'>
             <div className="flex flex-row justify-between items-center pt-8 pb-2 border-b border-b-[#E5E9EB]">
                 <h1 className="text-product-header-text">Add Product</h1>
             </div>
-            <div>
-                <ToastMessage message='Something happened' type='success' />
+            <div className="relative">
+                {showToast && (
+                    <div className="fixed top-3 right-3 z-50">
+                        <ToastMessage 
+                            message={toastMessage} 
+                            type={toastType}
+                            onClose={handleCloseToast}
+                        />
+                    </div>
+                )}
                 <ProductInput 
                     fields={inputFields} 
-                    onSubmit={handleFormSubmit} 
+                    onSubmit={handleFormSubmit}
+                    isLoading={isLoading}
                 />
             </div>
         </div>
-    )
+    );
 }

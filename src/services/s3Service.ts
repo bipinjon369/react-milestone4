@@ -1,4 +1,5 @@
-import useApi from './useApi';
+import axios from 'axios';
+
 interface FakeStoreProduct {
   id: number;
   title: string;
@@ -14,15 +15,12 @@ interface FakeStoreProduct {
 
 export const uploadToS3 = async (file: File): Promise<string> => {
   try {
-    const url = `https://fakestoreapi.com/`;
-    const { getAPI } = useApi(url);
-    console.log('Uploading file:', file);
     // Generate random product ID between 1 and 20
     const randomId = Math.floor(Math.random() * 20) + 1;
-    const urlParams = `products/${randomId}`;
+    
     // Fetch product from Fake Store API
-    const productData = await getAPI(urlParams);
-    const product: FakeStoreProduct = productData.data;
+    const response = await axios.get(`https://fakestoreapi.com/products/${randomId}`);
+    const product: FakeStoreProduct = response.data;
     
     // Return the image URL from the API response
     return product.image;

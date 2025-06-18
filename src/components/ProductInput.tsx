@@ -1,6 +1,6 @@
 import { useState, ChangeEvent, FormEvent } from 'react';
 import Button from './Button';
-import ProductUpload from './ProductUpload'
+import ProductUpload from './ProductUpload';
 
 interface InputField {
   label: string;
@@ -13,40 +13,29 @@ interface InputField {
 interface ProductInputProps {
   fields?: InputField[];
   onSubmit?: (formData: Record<string, string>) => void;
+  isLoading?: boolean;
 }
 
 export default function ProductInput({ 
   fields = [], 
-  onSubmit 
+  onSubmit,
+  isLoading = false
 }: ProductInputProps) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [apiErrors, setApiErrors] = useState<Record<string, string>>({});
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   const handleImageUploaded = (url: string) => {
-    // Fix: Use the url parameter directly, not imageUrl state
     setFormData(prev => ({ ...prev, image_url: url }));
     
     // Clear image error when upload succeeds
-    if (errors.image_url) {
+    if (errors.image_url && url) {
       setErrors(prev => ({ ...prev, image_url: '' }));
     }
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    console.log('The form data', formData);
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    
-    // Clear error when user types
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    
-    // Validate required fields
+  const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
     // Validate form fields
@@ -56,18 +45,55 @@ export default function ProductInput({
       }
     });
     
-    // Validate image upload (outside the loop)
+    // Validate image upload
     if (!formData.image_url) {
       newErrors['image_url'] = `Please upload an Image`;
     }
     
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear API errors when field changes
+    if (apiErrors[name]) {
+      setApiErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    
+    // Only clear errors when a field has a value, don't add new errors on change
+    if (formSubmitted && value) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setFormSubmitted(true);
+    
+    // Validate all fields
+    const isValid = validateForm();
+    
+    if (!isValid) {
       return;
     }
     
-    // Call onSubmit if provided
-    onSubmit?.(formData);
+    // Clear any previous API errors
+    setApiErrors({});
+    
+    try {
+      // Call onSubmit if provided and form is valid
+      if (onSubmit) {
+        await onSubmit(formData);
+      }
+    } catch (error: any) {
+      // Handle specific API errors
+      if (error.message === 'TITLE_EXISTS') {
+        setApiErrors({ title: 'Title already exists' });
+      }
+    }
   };
 
   // Group fields for layout (description gets its own row)
@@ -86,7 +112,7 @@ export default function ProductInput({
       <>
         <ProductUpload 
           onImageUploaded={handleImageUploaded} 
-          error={errors.image_url ?? ''} 
+          error={errors.image_url} 
         />
         
         {/* Render pairs of normal fields */}
@@ -109,11 +135,14 @@ export default function ProductInput({
                   placeholder={field.placeholder}
                   value={formData[field.name] || ''}
                   onChange={handleChange}
-                  className="w-full border border-[#DDE2E4] rounded-[8px] p-2 focus:outline-none focus:ring-2 focus:ring-[#5E6366]"
+                  className={`w-full border ${(apiErrors[field.name] || errors[field.name]) ? 'border-red-500' : 'border-[#DDE2E4]'} rounded-[8px] p-2 focus:outline-none focus:ring-2 focus:ring-[#5E6366]`}
+                  disabled={isLoading}
                 />
                 
-                {errors[field.name] && (
-                  <p className="text-red-500 text-sm mt-1">{errors[field.name]}</p>
+                {(errors[field.name] || apiErrors[field.name]) && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {apiErrors[field.name] || errors[field.name]}
+                  </p>
                 )}
               </div>
             ))}
@@ -137,12 +166,15 @@ export default function ProductInput({
               placeholder={field.placeholder}
               value={formData[field.name] || ''}
               onChange={handleChange}
-              className="w-full h-[41.8px] border border-[#DDE2E4] rounded-[8px] p-2 focus:outline-none focus:ring-2 focus:ring-[#5E6366]"
+              className={`w-full border ${(apiErrors[field.name] || errors[field.name]) ? 'border-red-500' : 'border-[#DDE2E4]'} rounded-[8px] p-2 focus:outline-none focus:ring-2 focus:ring-[#5E6366]`}
               rows={4}
+              disabled={isLoading}
             />
             
-            {errors[field.name] && (
-              <p className="text-red-500 text-sm mt-1">{errors[field.name]}</p>
+            {(errors[field.name] || apiErrors[field.name]) && (
+              <p className="text-red-500 text-sm mt-1">
+                {apiErrors[field.name] || errors[field.name]}
+              </p>
             )}
           </div>
         ))}
@@ -153,7 +185,12 @@ export default function ProductInput({
   return (
     <form onSubmit={handleSubmit} className="mt-8">
       {renderFields()}
-      <Button buttonText='Add' width='375px'/>
+      <Button 
+        buttonText='Add' 
+        width='375px' 
+        isLoading={isLoading}
+        disabled={isLoading}
+      />
     </form>
   );
 }

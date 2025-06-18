@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
-import ProductHeader from "./ProductHeader"
-import ProductList from "./ProductList"
+import ProductHeader from "./ProductHeader";
+import ProductList from "./ProductList";
+import ToastMessage from "./ToastMessage";
 import useApi from "../services/useApi";
 
 import type { Product } from "../data/types";
@@ -10,16 +12,47 @@ interface ProductListingProps {
     searchText?: string;
 }
 
+interface LocationState {
+    showToast?: boolean;
+    toastMessage?: string;
+    toastType?: 'success' | 'error';
+}
+
 export default function ProductListing({ searchText = '' }: ProductListingProps) {
-    // Call the get api
+    const location = useLocation();
+    const state = location.state as LocationState;
+    
+    // Toast state
+    const [showToast, setShowToast] = useState<boolean>(false);
+    const [toastMessage, setToastMessage] = useState<string>('');
+    const [toastType, setToastType] = useState<'success' | 'error'>('success');
+    
+    // Products state
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const [totalPages, setTotalPages] = useState<number>(0); // Set initial value to 3
+    const [totalPages, setTotalPages] = useState<number>(0);
     const limit = 10;
-    // To get the selected product
+    
     const { getAPI } = useApi();
+
+    // Check for toast message in navigation state
+    useEffect(() => {
+        if (state?.showToast && state?.toastMessage) {
+            setShowToast(true);
+            setToastMessage(state.toastMessage);
+            setToastType(state.toastType || 'success');
+            
+            // Clear the state to prevent showing toast on refresh
+            window.history.replaceState({}, document.title);
+            
+            // Auto-hide toast after 3 seconds
+            setTimeout(() => {
+                setShowToast(false);
+            }, 3000);
+        }
+    }, [state]);
 
     // Fetch paginated products when page changes or search text changes
     useEffect(() => {
@@ -29,19 +62,14 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
                 setError(null); // Reset error state
                 const offset = (currentPage - 1) * limit;
                 // Fetch the total count first
-                const countResult = await getAPI(`products${searchText && '?title=' + searchText}`);
+                const countResult = await getAPI(`products${searchText ? '?title=' + searchText : ''}`);
                 setTotalPages(Math.ceil(countResult.data.length / limit));
-                console.log('The count result: ', (Math.ceil(countResult.data.length / limit)))
-                console.log('The pages: ', totalPages)
+                
                 // Fetch products
-                const apiEndpoint = `products?offset=${offset}&limit=${limit}${searchText && '&title=' + searchText}`;
+                const apiEndpoint = `products?offset=${offset}&limit=${limit}${searchText ? '&title=' + searchText : ''}`;
                 const res: { error: unknown, data: Product[] } = await getAPI(apiEndpoint);
                 
-                // Filter products by search text if provided
-                const filteredProducts = res.data;
-                console.log('The products: ', filteredProducts)
-                
-                setProducts(filteredProducts);
+                setProducts(res.data);
             } catch (err: unknown) {
                 // Proper error handling for TypeScript
                 const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred';
@@ -53,7 +81,11 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
         };
         
         fetchProducts();
-    }, [currentPage, searchText]); // Add searchText as dependency
+    }, [currentPage, searchText]);
+
+    const handleCloseToast = () => {
+        setShowToast(false);
+    };
 
     // Handle loading state
     if (loading) {
@@ -81,8 +113,18 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
+    
     return (
-        <div className="ml-10 mr-[29px]">
+        <div className="ml-10 mr-[29px] relative">
+            {showToast && (
+                <div className="fixed top-3 right-3 z-50">
+                    <ToastMessage 
+                        message={toastMessage} 
+                        type={toastType}
+                        onClose={handleCloseToast}
+                    />
+                </div>
+            )}
             <ProductHeader />
             <ProductList 
                 products={products} 

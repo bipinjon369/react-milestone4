@@ -11,7 +11,7 @@ interface UploadState {
 
 interface ProductUploadProps {
     error?: string;
-    onImageUploaded?: (url: string) => void; // Add callback to notify parent
+    onImageUploaded?: (url: string) => void;
 }
 
 export default function ProductUpload({ error, onImageUploaded }: ProductUploadProps) {
@@ -58,6 +58,7 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
     };
     
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+        e.stopPropagation(); // Prevent event bubbling
         const files = e.target.files;
         if (!files || files.length === 0) return;
         
@@ -134,7 +135,9 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
         }
     };
     
-    const handleBrowseClick = () => {
+    const handleBrowseClick = (e: React.MouseEvent) => {
+        e.preventDefault(); // Prevent form submission
+        e.stopPropagation(); // Prevent event bubbling
         fileInputRef.current?.click();
     };
     
@@ -155,6 +158,9 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
+        
+        // Notify parent component that image was removed
+        onImageUploaded?.('');
     };
     
     const currentError = uploadState.uploadedUrl ? null : (uploadState.error || error);
@@ -174,6 +180,7 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
                     <button 
                         className="text-upload-text2 border-[2px] border-[#DDE2E4] w-[69px] h-[32px] rounded-[6px] mb-[10px] hover:bg-gray-50"
                         onClick={handleBrowseClick}
+                        type="button" // Explicitly set button type to prevent form submission
                         disabled={uploadState.isUploading}
                     >
                         Browse
@@ -203,10 +210,11 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
                             />
                             <button 
                                 onClick={resetUpload}
-                                className="absolute top-3 right-3 bg-white/80 hover:bg-white rounded-full p-2 shadow-sm transition-colors"
+                                type="button" // Explicitly set button type to prevent form submission
+                                className="absolute top-3 right-3 transition-colors"
                                 disabled={uploadState.isUploading}
                             >
-                                <img className='w-4 h-4' src='close_image.svg' alt="Close"/>
+                                <img className='w-6 h-6' src='close_image.svg' alt="Close"/>
                             </button>
                         </>
                     )}
