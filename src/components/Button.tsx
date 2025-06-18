@@ -4,15 +4,26 @@ interface ButtonProps {
   icon?: string;
   isLoading?: boolean;
   disabled?: boolean;
+  onClick?: () => void;
+  type?: 'submit' | 'button';
 }
 
-export default function Button({ buttonText, width, icon, isLoading, disabled }: ButtonProps) {
+export default function Button({ 
+  buttonText, 
+  width, 
+  icon, 
+  isLoading, 
+  disabled,
+  onClick,
+  type = 'submit'
+}: ButtonProps) {
   return (
     <button 
       className={`flex items-center justify-center ${disabled ? 'bg-[#A3CBFA]' : 'bg-[#4094F7]'} h-[32px] rounded-[6px]`}
       style={{ width: width || '136px' }}
-      type='submit'
+      type={type}
       disabled={disabled || isLoading}
+      onClick={onClick}
     >
       {isLoading ? (
         <div className="flex items-center">
