@@ -1,4 +1,4 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import Button from './Button';
 import ProductUpload from './ProductUpload';
 
@@ -14,17 +14,28 @@ interface ProductInputProps {
   fields?: InputField[];
   onSubmit?: (formData: Record<string, string>) => void;
   isLoading?: boolean;
+  initialData?: Record<string, string> | null;
+  buttonText?: string;
 }
 
 export default function ProductInput({ 
   fields = [], 
   onSubmit,
-  isLoading = false
+  isLoading = false,
+  initialData = null,
+  buttonText = 'Add'
 }: ProductInputProps) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [apiErrors, setApiErrors] = useState<Record<string, string>>({});
   const [formSubmitted, setFormSubmitted] = useState(false);
+
+  // Prefill form data when initialData is provided
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
   const handleImageUploaded = (url: string) => {
     setFormData(prev => ({ ...prev, image_url: url }));
@@ -112,7 +123,8 @@ export default function ProductInput({
       <>
         <ProductUpload 
           onImageUploaded={handleImageUploaded} 
-          error={errors.image_url} 
+          error={errors.image_url}
+          initialImageUrl={formData.image_url}
         />
         
         {/* Render pairs of normal fields */}
@@ -186,7 +198,7 @@ export default function ProductInput({
     <form onSubmit={handleSubmit} className="mt-8">
       {renderFields()}
       <Button 
-        buttonText='Add' 
+        buttonText={buttonText} 
         width='375px' 
         isLoading={isLoading}
         disabled={isLoading}

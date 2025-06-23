@@ -1,6 +1,7 @@
-import { useState } from "react"
-import type { Product } from "../data/types"
-import Paginator from "./Paginator"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import type { Product } from "../data/types";
+import Paginator from "./Paginator";
 
 const productHeaders = [
     'checkbox',
@@ -9,9 +10,9 @@ const productHeaders = [
     'description',
     'price',
     'actions'
-]
+];
 
-export default function ProductList ({
+export default function ProductList({
     products, 
     currentPage = 1, 
     pageCount = 1, 
@@ -22,43 +23,49 @@ export default function ProductList ({
     pageCount?: number,
     onPageChange: (page: number) => void
 }) {
+    const navigate = useNavigate();
     // State to store selected product IDs
-    const [selectedProducts, setSelectedProducts] = useState<string[]>([])
+    const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
     
     // Check if all products are selected
-    const isAllSelected = products ? (selectedProducts.length === products.length) && products.length != 0 : false
+    const isAllSelected = products ? (selectedProducts.length === products.length) && products.length != 0 : false;
     
     // Handle header checkbox (select/deselect all)
     const handleHeaderCheckboxChange = () => {
         if (isAllSelected) {
             // Deselect all
-            setSelectedProducts([])
+            setSelectedProducts([]);
         } else {
             // Select all
-            setSelectedProducts(products?.map(product => product.id) || [])
+            setSelectedProducts(products?.map(product => product.id) || []);
         }
-    }
+    };
     
     // Handle individual product checkbox
     const handleProductCheckboxChange = (productId: string) => {
         setSelectedProducts(prev => {
             if (prev.includes(productId)) {
                 // Remove from selection
-                return prev.filter(id => id !== productId)
+                return prev.filter(id => id !== productId);
             } else {
                 // Add to selection
-                return [...prev, productId]
+                return [...prev, productId];
             }
-        })
-    }
+        });
+    };
     
     // Handler to change the page
     const handlePageChange = (page: number) => {
         // Clear selections when changing page
-        setSelectedProducts([])
+        setSelectedProducts([]);
         // Call the parent's onPageChange handler
-        onPageChange(page)
-    }
+        onPageChange(page);
+    };
+
+    // Handle edit button click
+    const handleEditClick = (productId: string) => {
+        navigate(`/${productId}`);
+    };
     
     return (
         <div className="pt-7 flex flex-col h-[calc(100vh-147px)] min-h-[400px]">
@@ -126,11 +133,10 @@ export default function ProductList ({
                                     </td>
                                     <td className="px-3 py-1">
                                         <div className='flex items-center gap-[22px]'>
-                                            {/* Add your action buttons here */}
                                             <button>
                                                 <img src='delete.svg'/>
                                             </button>
-                                            <button>
+                                            <button onClick={() => handleEditClick(record.id)}>
                                                 <img src='edit.svg'/>
                                             </button>
                                         </div>
@@ -151,5 +157,5 @@ export default function ProductList ({
                 {products?.length > 0 && <Paginator currentPage={currentPage} pageCount={pageCount} onPageChange={handlePageChange} />}
             </div>
         </div>
-    )
+    );
 }

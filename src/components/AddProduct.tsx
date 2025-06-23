@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import ProductInput from './ProductInput';
 import ToastMessage from './ToastMessage';
 import useApi from '../services/useApi';
@@ -30,12 +30,44 @@ const inputFields = [
 
 export default function AddProduct() {
     const navigate = useNavigate();
+    const { productId } = useParams();
+    const isUpdateMode = Boolean(productId);
+    
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState('');
     const [toastType, setToastType] = useState<'success' | 'error'>('success');
     const [isLoading, setIsLoading] = useState(false);
+    const [initialData, setInitialData] = useState<Record<string, string> | null>(null);
     
-    const { PostAPI } = useApi();
+    const { PostAPI, PutAPI, getAPI } = useApi();
+    
+    // Fetch product data for update mode
+    useEffect(() => {
+        if (isUpdateMode && productId) {
+            const fetchProduct = async () => {
+                try {
+                    setIsLoading(true);
+                    const response = await getAPI(`products/${productId}`);
+                    
+                    if (!response.error) {
+                        const product = response.data;
+                        setInitialData({
+                            title: product.title,
+                            price: product.price.toString(),
+                            description: product.description,
+                            image_url: product.images[0]
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error fetching product:', error);
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+            
+            fetchProduct();
+        }
+    }, [isUpdateMode, productId]);
     
     const handleFormSubmit = async (formData: Record<string, string>) => {
         setIsLoading(true);
@@ -49,10 +81,17 @@ export default function AddProduct() {
                 images: [formData.image_url]
             };
             
-            const response = await PostAPI('products', productData);
+            let response;
+            if (isUpdateMode && productId) {
+                // Update existing product
+                response = await PutAPI(`products/${productId}`, productData);
+            } else {
+                // Create new product
+                response = await PostAPI('products', productData);
+            }
             
             if (response.error) {
-                setToastMessage('Failed to add product. Please check the form for errors.');
+                setToastMessage(`Failed to ${isUpdateMode ? 'update' : 'add'} product. Please check the form for errors.`);
                 setToastType('error');
                 setShowToast(true);
                 
@@ -70,11 +109,11 @@ export default function AddProduct() {
                 
                 throw new Error('API_ERROR');
             } else {
-                // Product added successfully, redirect to home page
+                // Success - redirect to home page with toast
                 navigate('/', { 
                     state: { 
                         showToast: true, 
-                        toastMessage: 'Product added successfully!',
+                        toastMessage: `Product ${isUpdateMode ? 'updated' : 'added'} successfully!`,
                         toastType: 'success'
                     } 
                 });
@@ -83,7 +122,7 @@ export default function AddProduct() {
             return { success: true };
             
         } catch (error: any) {
-            console.error('Error adding product:', error);
+            console.error('Error submitting product:', error);
             
             if (error.message !== 'TITLE_EXISTS') {
                 setToastMessage('An unexpected error occurred.');
@@ -104,7 +143,9 @@ export default function AddProduct() {
     return (
         <div className='ml-[42px] w-[850px]'>
             <div className="flex flex-row justify-between items-center pt-8 pb-2 border-b border-b-[#E5E9EB]">
-                <h1 className="text-product-header-text">Add Product</h1>
+                <h1 className="text-product-header-text">
+                    {isUpdateMode ? 'Update Product' : 'Add Product'}
+                </h1>
             </div>
             <div className="relative">
                 {showToast && (
@@ -120,6 +161,8 @@ export default function AddProduct() {
                     fields={inputFields} 
                     onSubmit={handleFormSubmit}
                     isLoading={isLoading}
+                    initialData={initialData}
+                    buttonText={isUpdateMode ? 'Update' : 'Add'}
                 />
             </div>
         </div>

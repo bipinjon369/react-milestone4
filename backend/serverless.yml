@@ -1,0 +1,39 @@
+service: image-upload-service
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-south-1
+  environment:
+    BUCKET_NAME: util-assess
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+          Resource: arn:aws:s3:::util-assess/products/*
+
+functions:
+  uploadImage:
+    handler: handler.uploadImage
+    events:
+      - http:
+          path: /upload
+          method: post
+          cors: true
+      # - httpApi:
+      #     path: /upload
+      #     method: options
+      #     cors: true
+
+plugins:
+  - serverless-esbuild
+
+custom:
+  esbuild:
+    bundle: true
+    target: node18
+    platform: node

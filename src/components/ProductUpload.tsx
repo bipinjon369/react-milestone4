@@ -12,9 +12,10 @@ interface UploadState {
 interface ProductUploadProps {
     error?: string;
     onImageUploaded?: (url: string) => void;
+    initialImageUrl?: string;
 }
 
-export default function ProductUpload({ error, onImageUploaded }: ProductUploadProps) {
+export default function ProductUpload({ error, onImageUploaded, initialImageUrl }: ProductUploadProps) {
     const [uploadState, setUploadState] = useState<UploadState>({
         isUploading: false,
         file: null,
@@ -24,6 +25,22 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
     });
     
     const fileInputRef = useRef<HTMLInputElement>(null);
+    
+    // Set initial image when provided
+    useEffect(() => {
+        if (initialImageUrl && !uploadState.uploadedUrl) {
+            setUploadState(prev => ({
+                ...prev,
+                uploadedUrl: initialImageUrl,
+                preview: initialImageUrl
+            }));
+            
+            // Notify parent component about the initial image
+            if (onImageUploaded) {
+                onImageUploaded(initialImageUrl);
+            }
+        }
+    }, [initialImageUrl, onImageUploaded, uploadState.uploadedUrl]);
     
     // Update error state when prop changes
     useEffect(() => {
@@ -35,7 +52,7 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
     // Cleanup object URLs on unmount
     useEffect(() => {
         return () => {
-            if (uploadState.preview) {
+            if (uploadState.preview && uploadState.preview.startsWith('blob:')) {
                 URL.revokeObjectURL(uploadState.preview);
             }
         };
@@ -95,8 +112,8 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
             return;
         }
         
-        // Clean up previous preview URL
-        if (uploadState.preview) {
+        // Clean up previous preview URL if it's a blob URL
+        if (uploadState.preview && uploadState.preview.startsWith('blob:')) {
             URL.revokeObjectURL(uploadState.preview);
         }
         
@@ -142,8 +159,8 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
     };
     
     const resetUpload = () => {
-        // Clean up the object URL
-        if (uploadState.preview) {
+        // Clean up the object URL if it's a blob URL
+        if (uploadState.preview && uploadState.preview.startsWith('blob:')) {
             URL.revokeObjectURL(uploadState.preview);
         }
         
@@ -164,12 +181,13 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
     };
     
     const currentError = uploadState.uploadedUrl ? null : (uploadState.error || error);
+    const hasImage = uploadState.preview || uploadState.uploadedUrl;
     
     return (
         <div className='pb-6'>
             <span className='text-label-text text-[#5E6366] pt-[30px] pb-[6px]'>Product image</span><span className="text-red-500 text-label-text ml-1">*</span>
             
-            {!uploadState.file ? (
+            {!hasImage ? (
                 <div 
                     className='flex flex-col items-center border border-dashed border-[#ABAFB1] rounded-[8px] p-7'
                     onDrop={handleDrop}
@@ -201,23 +219,19 @@ export default function ProductUpload({ error, onImageUploaded }: ProductUploadP
                             <div className="text-white">Uploading...</div>
                         </div>
                     )}
-                    {uploadState.preview && (
-                        <>
-                            <img 
-                                src={uploadState.preview} 
-                                alt="Preview" 
-                                className="h-[198px] rounded-[8px] object-cover" 
-                            />
-                            <button 
-                                onClick={resetUpload}
-                                type="button" // Explicitly set button type to prevent form submission
-                                className="absolute top-3 right-3 transition-colors"
-                                disabled={uploadState.isUploading}
-                            >
-                                <img className='w-6 h-6' src='close_image.svg' alt="Close"/>
-                            </button>
-                        </>
-                    )}
+                    <img 
+                        src={uploadState.preview || uploadState.uploadedUrl || ''} 
+                        alt="Preview" 
+                        className="h-[198px] rounded-[8px] object-cover" 
+                    />
+                    <button 
+                        onClick={resetUpload}
+                        type="button" // Explicitly set button type to prevent form submission
+                        className="absolute top-[6px] right-[6px]"
+                        disabled={uploadState.isUploading}
+                    >
+                        <img className='w-6 h-6' src='close_image.svg' alt="Close"/>
+                    </button>
                 </div>
             )}
             

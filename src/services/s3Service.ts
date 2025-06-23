@@ -1,31 +1,35 @@
 import axios from 'axios';
 
-interface FakeStoreProduct {
-  id: number;
-  title: string;
-  price: number;
-  description: string;
-  category: string;
-  image: string;
-  rating: {
-    rate: number;
-    count: number;
-  };
-}
-
 export const uploadToS3 = async (file: File): Promise<string> => {
   try {
-    // Generate random product ID between 1 and 20
-    const randomId = Math.floor(Math.random() * 20) + 1;
-    
-    // Fetch product from Fake Store API
-    const response = await axios.get(`https://fakestoreapi.com/products/${randomId}`);
-    const product: FakeStoreProduct = response.data;
-    
-    // Return the image URL from the API response
-    return product.image;
+    // Convert file to base64
+    const base64Data = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        // Remove the data URL prefix to get just the base64 data
+        const base64 = result.split(',')[1];
+        resolve(base64);
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+
+    // Upload to your API - match the expected format
+    const response = await axios.post('https://ncdh23tawf.execute-api.ap-south-1.amazonaws.com/dev/upload', {
+      fileName: file.name,
+      contentType: file.type,
+      imageData: base64Data  // Changed from fileData to imageData to match your handler
+    }, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Return the image URL from your API response
+    return response.data.url;
   } catch (error) {
-    console.error('Error in mock upload:', error);
+    console.error('Error uploading to S3:', error);
     throw new Error('Failed to upload file');
   }
 };
