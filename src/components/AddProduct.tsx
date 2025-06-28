@@ -19,6 +19,20 @@ const inputFields = [
     placeholder: "Enter price",
     required: true,
   },
+// {
+//     label: "Quantity",
+//     name: "quantity",
+//     type: "number",
+//     placeholder: "Enter quantity",
+//     required: true,
+//   },
+//   {
+//     label: "Code",
+//     name: "code",
+//     type: "text",
+//     placeholder: "Enter code",
+//     required: true,
+//   },
   {
     label: "Description",
     name: "description",
