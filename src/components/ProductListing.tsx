@@ -58,7 +58,7 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
             // Auto-hide toast after 3 seconds
             setTimeout(() => {
                 setShowToast(false);
-            }, 3000);
+            }, 5000);
         }
     }, [state]);
 
@@ -170,7 +170,7 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
     return (
         <div className="ml-10 mr-[29px] relative">
             {showToast && (
-                <div className="fixed top-3 right-3 z-50">
+                <div className="fixed top-3 right-3 z-50 animate-slide-in-right">
                     <ToastMessage 
                         message={toastMessage} 
                         type={toastType}
