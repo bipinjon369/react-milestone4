@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 import ProductHeader from "./ProductHeader";
 import ProductList from "./ProductList";
@@ -20,6 +21,7 @@ interface LocationState {
 }
 
 export default function ProductListing({ searchText = '' }: ProductListingProps) {
+    const navigate = useNavigate();
     const location = useLocation();
     const state = location.state as LocationState;
     
@@ -113,10 +115,14 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
                 
                 // Close modal and show success toast
                 handleCloseModal();
-                setToastMessage('Product deleted successfully!');
-                setToastType('success');
-                setShowToast(true);
-                
+                // Success - redirect to home page with toast
+                navigate('/', { 
+                    state: { 
+                        showToast: true, 
+                        toastMessage: `Product deleted successfully!`,
+                        toastType: 'success'
+                    } 
+                });
                 // Refresh products list by triggering useEffect
                 setRefreshTrigger(prev => prev + 1);
             } catch (error) {

@@ -139,7 +139,16 @@ export default function AddProduct() {
     const handleCloseToast = () => {
         setShowToast(false);
     };
-
+    // Handle loading state
+    if (isLoading && isUpdateMode) {
+        return (
+            <div className="ml-10 mr-[29px]">
+                <div className="flex justify-center items-center h-64 text-gray-500">
+                    <p>Loading product...</p>
+                </div>
+            </div>
+        );
+    }
     return (
         <div className='ml-[42px] w-[850px]'>
             <div className="flex flex-row justify-between items-center pt-8 pb-2 border-b border-b-[#E5E9EB]">
