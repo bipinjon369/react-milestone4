@@ -16,12 +16,14 @@ export default function ProductList({
     products, 
     currentPage = 1, 
     pageCount = 1, 
-    onPageChange
+    onPageChange,
+    onDeleteClick
 }: {
     products: Product[],
     currentPage?: number,
     pageCount?: number,
-    onPageChange: (page: number) => void
+    onPageChange: (page: number) => void,
+    onDeleteClick?: (product: Product) => void
 }) {
     const navigate = useNavigate();
     // State to store selected product IDs
@@ -65,6 +67,13 @@ export default function ProductList({
     // Handle edit button click
     const handleEditClick = (productId: string) => {
         navigate(`/${productId}`);
+    };
+
+    // Handle delete button click
+    const handleDeleteButtonClick = (product: Product) => {
+        if (onDeleteClick) {
+            onDeleteClick(product);
+        }
     };
     
     return (
@@ -133,7 +142,7 @@ export default function ProductList({
                                     </td>
                                     <td className="px-3 py-1">
                                         <div className='flex items-center gap-[22px]'>
-                                            <button>
+                                            <button onClick={() => handleDeleteButtonClick(record)}>
                                                 <img src='delete.svg'/>
                                             </button>
                                             <button onClick={() => handleEditClick(record.id)}>

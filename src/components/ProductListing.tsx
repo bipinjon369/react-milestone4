@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import ProductHeader from "./ProductHeader";
 import ProductList from "./ProductList";
 import ToastMessage from "./ToastMessage";
+import DeleteModal from "./DeleteModal";
 import useApi from "../services/useApi";
 
 import type { Product } from "../data/types";
@@ -27,15 +28,20 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
     const [toastMessage, setToastMessage] = useState<string>('');
     const [toastType, setToastType] = useState<'success' | 'error'>('success');
     
+    // Modal state
+    const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+    const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+    const [isModalLoading, setIsModalLoading] = useState<boolean>(false);
     // Products state
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(0);
+    const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
     const limit = 10;
     
-    const { getAPI } = useApi();
+    const { getAPI, DeleteAPI } = useApi();
 
     // Check for toast message in navigation state
     useEffect(() => {
@@ -81,7 +87,48 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
         };
         
         fetchProducts();
-    }, [currentPage, searchText]);
+    }, [currentPage, searchText, refreshTrigger]);
+
+    // Handle delete button click - callback from ProductList
+    const handleDeleteClick = (product: Product) => {
+        setProductToDelete(product);
+        setShowDeleteModal(true);
+    };
+
+    // Handle modal close - delay clearing product data
+    const handleCloseModal = () => {
+        setShowDeleteModal(false);
+        // Delay clearing product data to prevent name disappearing during close animation
+        setTimeout(() => {
+            setProductToDelete(null);
+        }, 300); // Adjust timing based on modal close animation duration
+    };
+
+    // Handle actual delete
+    const handleConfirmDelete = async () => {
+        if (productToDelete) {
+            try {
+                setIsModalLoading(true);
+                await DeleteAPI(`products/${productToDelete.id}`);
+                
+                // Close modal and show success toast
+                handleCloseModal();
+                setToastMessage('Product deleted successfully!');
+                setToastType('success');
+                setShowToast(true);
+                
+                // Refresh products list by triggering useEffect
+                setRefreshTrigger(prev => prev + 1);
+            } catch (error) {
+                console.error('Error deleting product:', error);
+                setToastMessage('Failed to delete product');
+                setToastType('error');
+                setShowToast(true);
+            } finally {
+                setIsModalLoading(false);
+            }
+        }
+    };
 
     const handleCloseToast = () => {
         setShowToast(false);
@@ -125,12 +172,22 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
                     />
                 </div>
             )}
+            
+            <DeleteModal
+                isModalOpen={showDeleteModal}
+                onClose={handleCloseModal}
+                onConfirm={handleConfirmDelete}
+                productName={productToDelete?.title || ''}
+                loading={isModalLoading}
+            />
+            
             <ProductHeader />
             <ProductList 
                 products={products} 
                 currentPage={currentPage} 
                 pageCount={totalPages} 
-                onPageChange={handlePageChange} 
+                onPageChange={handlePageChange}
+                onDeleteClick={handleDeleteClick}
             />
         </div>
     );

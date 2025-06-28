@@ -1,26 +1,30 @@
 interface ButtonProps {
   buttonText: string;
   width: string;
+  height?: string;
   icon?: string;
   isLoading?: boolean;
   disabled?: boolean;
   onClick?: () => void;
   type?: 'submit' | 'button';
+  fill?: boolean;
 }
 
 export default function Button({ 
   buttonText, 
   width, 
+  height,
   icon, 
   isLoading, 
   disabled,
   onClick,
-  type = 'submit'
+  type = 'submit',
+  fill = true
 }: ButtonProps) {
   return (
     <button 
-      className={`flex items-center justify-center ${disabled ? 'bg-[#A3CBFA]' : 'bg-[#4094F7]'} h-[32px] rounded-[6px]`}
-      style={{ width: width || '136px' }}
+      className={`flex items-center justify-center ${disabled ? 'bg-[#A3CBFA]' : fill ? 'bg-[#4094F7]' : 'border border-[#D0D5DD]'} h-[32px] rounded-[6px]`}
+      style={{ width: width || '136px', height: height || '32px' }}
       type={type}
       disabled={disabled || isLoading}
       onClick={onClick}
@@ -36,7 +40,7 @@ export default function Button({
       ) : (
         <>
           {icon && <img src={icon} alt="" />}
-          <span className="text-button-text text-[#F6F8F9]">{buttonText}</span>
+          <span className={`text-button-text ${fill ? 'text-[#F6F8F9]' : 'text-[#344054]'}`}>{buttonText}</span>
         </>
       )}
     </button>

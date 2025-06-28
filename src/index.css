@@ -9,3 +9,11 @@
     @apply font-inter text-sidebar-text-color;
   }
 }
+
+.react-responsive-modal-modal {
+  border-radius: 12px !important;
+  padding: 24px !important;
+  box-shadow: 0px 20px 24px -4px #10182814;
+  min-height: 268px !important;
+  width: 400px !important;
+}

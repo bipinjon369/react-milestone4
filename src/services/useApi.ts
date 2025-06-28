@@ -79,8 +79,27 @@ const useApi = (url: string = '') => {
             }
         }
     };
+
+    /**
+     * Makes a DELETE request to the specified endpoint.
+     * @returns An object with `error` and `data` properties.
+     */
+    const DeleteAPI = async (endpoint: string) => {
+        try {
+            const { data } = await axios.delete(`${baseURL}${endpoint}`);
+            return { error: false, data };
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                // Handle Axios-specific error
+                return { error: true, data: error.response?.data || error };
+            } else {
+                // Handle non-Axios errors
+                return { error: true, data: 'An unexpected error occurred' };
+            }
+        }
+    };
     
-    return { getAPI, PostAPI, PatchAPI, PutAPI };
+    return { getAPI, PostAPI, PatchAPI, PutAPI, DeleteAPI };
 };
 
 export default useApi;
