@@ -36,7 +36,8 @@ export default function AddProduct() {
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
   const [toastType, setToastType] = useState<"success" | "error">("success");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingData, setIsLoadingData] = useState(false);
   const [initialData, setInitialData] = useState<Record<string, string> | null>(
     null
   );
@@ -48,7 +49,7 @@ export default function AddProduct() {
     if (isUpdateMode && productId) {
       const fetchProduct = async () => {
         try {
-          setIsLoading(true);
+          setIsLoadingData(true);
           const response = await getAPI(`products/${productId}`);
           console.log(response);
           if (!response.error) {
@@ -60,10 +61,11 @@ export default function AddProduct() {
               image_url: product.images[0],
             });
           }
+          
         } catch (error) {
           console.error("Error fetching product:", error);
         } finally {
-          setIsLoading(false);
+          setIsLoadingData(false);
         }
       };
 
@@ -72,7 +74,7 @@ export default function AddProduct() {
   }, [isUpdateMode, productId]);
 
   const handleFormSubmit = async (formData: Record<string, string>) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
 
     try {
       const productData = {
@@ -141,15 +143,16 @@ export default function AddProduct() {
 
       throw error;
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   const handleCloseToast = () => {
     setShowToast(false);
   };
-  // Handle loading state
-  if (isLoading && isUpdateMode) {
+  
+  // Handle loading state for initial data fetch only
+  if (isLoadingData && isUpdateMode) {
     return (
       <div className="ml-10 mr-[29px]">
         <div className="flex justify-center items-center h-64 text-gray-500">
@@ -158,6 +161,7 @@ export default function AddProduct() {
       </div>
     );
   }
+  
   return (
     <div className="ml-[42px] w-[850px]">
       <div className="flex flex-row justify-between items-center pt-8 pb-2 border-b border-b-[#E5E9EB]">
@@ -178,7 +182,7 @@ export default function AddProduct() {
         <ProductInput
           fields={inputFields}
           onSubmit={handleFormSubmit}
-          isLoading={isLoading}
+          isLoading={isSubmitting}
           initialData={initialData}
           buttonText={isUpdateMode ? "Update" : "Add"}
         />
