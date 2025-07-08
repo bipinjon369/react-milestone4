@@ -95,7 +95,7 @@ export default function AddProduct() {
         title: formData.title,
         price: parseFloat(formData.price),
         description: formData.description || "No description provided",
-        categoryId: 1,
+        categoryId: 26,
         images: [formData.image_url],
       };
 
