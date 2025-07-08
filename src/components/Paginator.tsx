@@ -1,5 +1,5 @@
 import ReactPaginate from 'react-paginate'
-import { ChevronLeft, ChevronRight } from 'lucide-react' // Optional: icon library
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 type PaginatorProps = {
   pageCount: number
@@ -12,7 +12,6 @@ export default function Paginator({
   onPageChange,
   currentPage,
 }: PaginatorProps) {
-  console.log('It is the oneee', currentPage)
   return (
     <div className="relative w-full border-t border-t-[#E5E9EB] pt-3 pb-4">
       <ReactPaginate

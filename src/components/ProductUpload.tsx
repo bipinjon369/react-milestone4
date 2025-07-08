@@ -230,7 +230,7 @@ export default function ProductUpload({ error, onImageUploaded, initialImageUrl 
                         className="absolute top-[6px] right-[6px]"
                         disabled={uploadState.isUploading}
                     >
-                        <img className='w-6 h-6' src='close_image.svg' alt="Close"/>
+                        <img className='w-6 h-6' src='/close_image.svg' alt="Close"/>
                     </button>
                 </div>
             )}

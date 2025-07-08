@@ -17,13 +17,15 @@ export default function ProductList({
     currentPage = 1, 
     pageCount = 1, 
     onPageChange,
-    onDeleteClick
+    onDeleteClick,
+    onProductDeleted
 }: {
     products: Product[],
     currentPage?: number,
     pageCount?: number,
     onPageChange: (page: number) => void,
-    onDeleteClick?: (product: Product) => void
+    onDeleteClick?: (product: Product) => void,
+    onProductDeleted?: () => void
 }) {
     const navigate = useNavigate();
     // State to store selected product IDs
@@ -66,7 +68,7 @@ export default function ProductList({
 
     // Handle edit button click
     const handleEditClick = (productId: string) => {
-        navigate(`/${productId}`);
+        navigate(`/edit/${productId}`);
     };
 
     // Handle delete button click

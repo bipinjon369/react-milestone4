@@ -12,7 +12,7 @@ export default function AppRoutes({ searchText }: AppRoutesProps) {
             <Routes>
                 <Route path="/" element={<ProductListing searchText={searchText} />} />
                 <Route path="/add-product" element={<AddProduct />} />
-                <Route path="/:productId" element={<AddProduct />} />
+                <Route path="/edit/:productId" element={<AddProduct />} />
             </Routes>
         </BrowserRouter>
     );

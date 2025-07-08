@@ -62,6 +62,11 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
         }
     }, [state]);
 
+    // Reset to first page when search text changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchText]);
+
     // Fetch paginated products when page changes or search text changes
     useEffect(() => {
         const fetchProducts = async () => {
@@ -115,14 +120,20 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
                 
                 // Close modal and show success toast
                 handleCloseModal();
-                // Success - redirect to home page with toast
-                navigate('/', { 
-                    state: { 
-                        showToast: true, 
-                        toastMessage: `Product deleted successfully!`,
-                        toastType: 'success'
-                    } 
-                });
+                
+                // Reset to first page after deletion
+                setCurrentPage(1);
+                
+                // Show success toast
+                setToastMessage('Product deleted successfully!');
+                setToastType('success');
+                setShowToast(true);
+                
+                // Auto-hide toast after 3 seconds
+                setTimeout(() => {
+                    setShowToast(false);
+                }, 3000);
+                
                 // Refresh products list by triggering useEffect
                 setRefreshTrigger(prev => prev + 1);
             } catch (error) {
@@ -130,6 +141,11 @@ export default function ProductListing({ searchText = '' }: ProductListingProps)
                 setToastMessage('Failed to delete product');
                 setToastType('error');
                 setShowToast(true);
+                
+                // Auto-hide error toast after 3 seconds
+                setTimeout(() => {
+                    setShowToast(false);
+                }, 3000);
             } finally {
                 setIsModalLoading(false);
             }

@@ -2,6 +2,11 @@
 import { sidebarItems1, sidebarItems2, sidebarItems3 } from '../data/data'
 
 export default function SideBar() {
+    const handleItemClick = (item: string) => {
+        if (item === 'Products') {
+            window.location.href = '/';
+        }
+    };
     return (
         <div className="h-full flex flex-col bg-[#F6F8F9] pr-4">
             <div className='pl-[26px] pt-[21px]'>
@@ -16,11 +21,13 @@ export default function SideBar() {
                         const isSelected = record.item === 'Products'
                         return (
                             <li key={index}>
-                                <button className={`flex items-center gap-2 py-1 w-[208px] rounded-[6px] transition-colors duration-200 ${
-                                    isSelected 
-                                        ? 'bg-[#D7EDFF]' 
-                                        : 'hover:bg-[#D7EDFF]'
-                                }`}>
+                                <button 
+                                    onClick={() => handleItemClick(record.item)}
+                                    className={`flex items-center gap-2 py-1 w-[208px] rounded-[6px] transition-colors duration-200 ${
+                                        isSelected 
+                                            ? 'bg-[#D7EDFF]' 
+                                            : 'hover:bg-[#D7EDFF]'
+                                    }`}>
                                     {record.icon && <div className='pl-2'>
                                         <img src={record.item.toLowerCase().replace(/\s/g, '_') + '.svg'} alt="" />
                                     </div>}
@@ -42,11 +49,13 @@ export default function SideBar() {
                         const isSelected = record.item === 'Products'
                         return (
                             <li key={index}>
-                                <button className={`flex items-center gap-2 py-1 w-[208px] rounded-[6px] transition-colors duration-200 ${
-                                    isSelected 
-                                        ? 'bg-[#D7EDFF]' 
-                                        : 'hover:bg-[#D7EDFF]'
-                                }`}>
+                                <button 
+                                    onClick={() => handleItemClick(record.item)}
+                                    className={`flex items-center gap-2 py-1 w-[208px] rounded-[6px] transition-colors duration-200 ${
+                                        isSelected 
+                                            ? 'bg-[#D7EDFF]' 
+                                            : 'hover:bg-[#D7EDFF]'
+                                    }`}>
                                     {record.icon && <div className='pl-2'>
                                         <img src={record.item.toLowerCase().replace(/\s/g, '_') + '.svg'} alt="" />
                                     </div>}
@@ -68,11 +77,13 @@ export default function SideBar() {
                         const isSelected = record.item === 'Products'
                         return (
                             <li key={index}>
-                                <button className={`flex items-center gap-2 py-1 w-[208px] rounded-[6px] transition-colors duration-200 ${
-                                    isSelected 
-                                        ? 'bg-[#D7EDFF]' 
-                                        : 'hover:bg-[#D7EDFF]'
-                                }`}>
+                                <button 
+                                    onClick={() => handleItemClick(record.item)}
+                                    className={`flex items-center gap-2 py-1 w-[208px] rounded-[6px] transition-colors duration-200 ${
+                                        isSelected 
+                                            ? 'bg-[#D7EDFF]' 
+                                            : 'hover:bg-[#D7EDFF]'
+                                    }`}>
                                     {record.icon && <div className='pl-2'>
                                         <img src={record.item.toLowerCase().replace(/\s/g, '_') + '.svg'} alt="" />
                                     </div>}
