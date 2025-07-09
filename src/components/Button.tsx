@@ -24,7 +24,7 @@ export default function Button({
   return (
     <button 
       className={`flex items-center justify-center ${disabled ? 'bg-[#A3CBFA]' : fill ? 'bg-[#4094F7]' : 'border border-[#D0D5DD]'} h-[32px] rounded-[6px]`}
-      style={{ width: width || '136px', height: height || '32px' }}
+      style={{ width: width || '136px', height: height || '44px' }}
       type={type}
       disabled={disabled || isLoading}
       onClick={onClick}
